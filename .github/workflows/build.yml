@@ -17,22 +17,23 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle Wrapper Permissions
+      - name: Find and Build APK with Gradle
         run: |
+          PROJECT_DIR=$(dirname $(find . -name "build.gradle" -o -name "build.gradle.kts" | head -n 1))
+          echo "Found project directory: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
+          
           if [ -f ./gradlew ]; then
             chmod +x gradlew
-          fi
-
-      - name: Build APK with Gradle
-        run: |
-          if [ -f ./gradlew ]; then
             ./gradlew assembleDebug
           else
-            gradle assembleDebug
+            gradle wrapper
+            chmod +x gradlew
+            ./gradlew assembleDebug
           fi
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: '**/build/outputs/apk/debug/*.apk'
